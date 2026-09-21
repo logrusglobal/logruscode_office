@@ -5,7 +5,15 @@ One kit, two languages. Один комплект, два языка.
 - **English** — [docs/en/README.md](docs/en/README.md)
 - **Русский** — [docs/ru/README.md](docs/ru/README.md)
 
-## Quick start / Быстрый старт
+## Simplest way / Самый простой способ
+
+Double-click **`Install.cmd`** — it asks for the language, the Plexus key and the
+packages, then does everything else. **`Uninstall.cmd`** removes the kit the same way.
+
+Дважды щёлкните **`Install.cmd`** — он спросит язык, ключ Plexus и пакеты, дальше
+сделает всё сам. **`Uninstall.cmd`** так же удаляет комплект.
+
+## Scripted / Для автоматизации
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass

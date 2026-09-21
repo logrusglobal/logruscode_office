@@ -18,17 +18,14 @@
 
 1. Взять ключ сотрудника в Vaultwarden (запись с ключом Plexus, формат `sk-air-…`). Если записи нет — создать ключ в Plexus и записать в Vaultwarden.
 2. Скопировать папку комплекта на компьютер сотрудника (например, `D:\OpenCode_Kit`).
-3. Запустить установщик из PowerShell (Пуск → наберите `powershell` → Enter):
+3. **Дважды щёлкнуть `Install.cmd`** в папке комплекта. Скрипт спросит три вещи — язык, ключ Plexus сотрудника и какие пакеты ставить (Enter — все три), покажет сводку и дальше сделает всё сам. Ни знания PowerShell, ни прав администратора не нужно: всё ставится только для текущего пользователя.
+
+   Для автоматической установки движок можно вызвать напрямую из PowerShell (Пуск → наберите `powershell` → Enter):
 
    ```powershell
    Set-ExecutionPolicy -Scope Process Bypass
    cd "D:\OpenCode_Kit\scripts"
    .\install.ps1 -PlexusKey "sk-air-XXXX"
-   ```
-
-   Так ставятся все три пакета. Чтобы поставить часть — перечислите их:
-
-   ```powershell
    .\install.ps1 -PlexusKey "sk-air-XXXX" -Lang ru -Packages 1,3
    ```
 
@@ -51,6 +48,10 @@
 Из Git Bash те же аргументы принимает `./install.sh` — он передаёт их в PowerShell.
 
 ## Удаление
+
+**Дважды щёлкните `Uninstall.cmd`** в папке комплекта. Скрипт спросит, какие пакеты удалять, и переспросит перед тем, как что-то трогать: Enter на подтверждении отменяет операцию, удаление происходит только при явном ответе «y».
+
+Либо из PowerShell:
 
 ```powershell
 cd "D:\OpenCode_Kit\scripts"
@@ -83,8 +84,12 @@ cd "D:\OpenCode_Kit\scripts"
 ## Структура комплекта
 
 ```
-scripts/        install.ps1, uninstall.ps1, обёртки .sh,
-                lib/common.ps1 и i18n/<язык>.json (все сообщения консоли)
+Install.cmd     двойной щелчок — установка
+Uninstall.cmd   двойной щелчок — удаление
+scripts/        install.ps1, uninstall.ps1 (движки для автоматизации),
+                interactive.ps1 (вопросы, стоящие за двумя .cmd),
+                обёртки .sh, lib/common.ps1
+                и i18n/<язык>.json (все сообщения консоли)
 docs/<язык>/    эта документация
 package1_opencode_plexus/   opencode.json и агент office по языкам
 package2_browser_agent/     MCP-сервер chrome-devtools, start-browser.cmd,

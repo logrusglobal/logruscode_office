@@ -18,17 +18,14 @@ The packages are independent — install any combination with `-Packages`. Packa
 
 1. Take the employee's key from Vaultwarden (the entry with the Plexus key, format `sk-air-…`). If there is no entry — create a key in Plexus and record it in Vaultwarden.
 2. Copy the kit folder to the employee's computer (for example, `D:\OpenCode_Kit`).
-3. Run the installer from PowerShell (Start → type `powershell` → Enter):
+3. **Double-click `Install.cmd`** in the kit folder. It asks three things — the language, the employee's Plexus key, and which packages (press Enter for all three) — shows a summary, and does the rest itself. No PowerShell knowledge and no administrator rights are needed: everything is installed for the current user only.
+
+   For unattended or scripted installs, call the engine directly from PowerShell (Start → type `powershell` → Enter):
 
    ```powershell
    Set-ExecutionPolicy -Scope Process Bypass
    cd "D:\OpenCode_Kit\scripts"
    .\install.ps1 -PlexusKey "sk-air-XXXX"
-   ```
-
-   That installs all three packages. To install a subset, name them:
-
-   ```powershell
    .\install.ps1 -PlexusKey "sk-air-XXXX" -Lang en -Packages 1,3
    ```
 
@@ -51,6 +48,10 @@ The packages are independent — install any combination with `-Packages`. Packa
 From Git Bash, `./install.sh` takes the same arguments and forwards them to PowerShell.
 
 ## Removal
+
+**Double-click `Uninstall.cmd`** in the kit folder. It asks which packages to remove and confirms before touching anything — pressing Enter at the confirmation cancels, so removal only happens on an explicit "y".
+
+Or from PowerShell:
 
 ```powershell
 cd "D:\OpenCode_Kit\scripts"
@@ -83,8 +84,12 @@ Not removed: the employee's documents, the Chrome profile with its logins (use `
 ## Layout of the kit
 
 ```
-scripts/        install.ps1, uninstall.ps1, the .sh wrappers,
-                lib/common.ps1 and i18n/<lang>.json (all console messages)
+Install.cmd     double-click to install
+Uninstall.cmd   double-click to remove
+scripts/        install.ps1, uninstall.ps1 (the scriptable engines),
+                interactive.ps1 (the prompts behind the two .cmd files),
+                the .sh wrappers, lib/common.ps1
+                and i18n/<lang>.json (all console messages)
 docs/<lang>/    this documentation
 package1_opencode_plexus/   opencode.json + the office agent, per language
 package2_browser_agent/     the chrome-devtools MCP server, start-browser.cmd,
