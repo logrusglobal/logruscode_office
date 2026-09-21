@@ -1,0 +1,19 @@
+# Line endings are part of whether these files RUN, not a style preference.
+#
+# The documented workflow copies a kit folder straight onto the target machine,
+# so whatever is in the working tree is what the employee executes. A macOS
+# script checked out with CRLF fails at the shebang with
+# "bad interpreter: /bin/bash^M", and a .cmd checked out with LF confuses
+# cmd.exe, so each kit pins its own endings regardless of core.autocrlf.
+
+* text=auto
+
+# macOS kit - must stay LF everywhere, including the docs the scripts read.
+packages_mac/**            text eol=lf
+packages_mac/**/*.command  text eol=lf
+packages_mac/**/*.sh       text eol=lf
+packages_mac/**/*.py       text eol=lf
+
+# Windows kit - the native tooling wants CRLF.
+packages_win/**/*.cmd      text eol=crlf
+packages_win/**/*.ps1      text eol=crlf

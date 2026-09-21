@@ -1,0 +1,12 @@
+{
+  "office-word": {
+    "type": "local",
+    "command": ["{{UVX}}", "--from", "office-word-mcp-server", "word_mcp_server"],
+    "enabled": true
+  },
+  "office-excel": {
+    "type": "local",
+    "command": ["{{UVX}}", "excel-mcp-server", "stdio"],
+    "enabled": true
+  }
+}
