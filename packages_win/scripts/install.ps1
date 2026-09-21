@@ -78,6 +78,13 @@ $configPath = Join-Path $TargetDir 'opencode.json'
 $agentsMd = Join-Path $TargetDir 'AGENTS.md'
 New-Item -ItemType Directory -Force -Path $TargetDir, $agentsDir | Out-Null
 
+# An AGENTS.md left by a pre-marker kit version still holds an unmarked copy of
+# these rules - in whichever language that install used. It would sit above the
+# blocks written below and quietly win, so take it out before writing anything.
+if (Remove-LegacyKitSections -Path $agentsMd -Headings (Get-KitHeadings -KitRoot $KitRoot)) {
+    Write-Warn $M.legacy_block_removed
+}
+
 # ============================================================================
 # Package 1 - OpenCode Desktop + Plexus
 # ============================================================================
@@ -168,8 +175,24 @@ if ($Packages -contains 2) {
     Write-Ok $M.p2_mcp_ok
 
     Write-Step $M.p2_files
-    Copy-Item (Join-Path $p2Locale 'agents\browser.md') (Join-Path $agentsDir 'browser.md') -Force
     Copy-Item (Join-Path $p2Config 'start-browser.cmd') (Join-Path $TargetDir 'start-browser.cmd') -Force
+    Copy-Item (Join-Path $p2Config 'ensure-browser.cmd') (Join-Path $TargetDir 'ensure-browser.cmd') -Force
+
+    # The @browser agent starts the browser itself by running ensure-browser.cmd,
+    # so its prompt needs the real absolute path: the shell behind the agent's
+    # bash tool does not expand %USERPROFILE%.
+    $browserAgent = Get-Content -LiteralPath (Join-Path $p2Locale 'agents\browser.md') -Raw -Encoding UTF8
+    if ($browserAgent -notmatch '\{\{ENSURE_BROWSER\}\}') { throw $M.err_ensure_token }
+    $browserAgent = $browserAgent.Replace('{{ENSURE_BROWSER}}', (Join-Path $TargetDir 'ensure-browser.cmd'))
+
+    # A subagent with no model line does NOT inherit the caller's model - OpenCode
+    # resolves its own default, which lands on the free tier and is refused by the
+    # provider. Pin @browser to whatever model the config runs on.
+    $browserModel = $cfg['model']
+    if (-not $browserModel) { throw $M.err_no_model }
+    $browserAgent = $browserAgent.Replace('{{MODEL}}', $browserModel)
+    Write-Host ($M.p2_model -f $browserModel)
+    Write-TextFile -Path (Join-Path $agentsDir 'browser.md') -Text $browserAgent
     Set-MarkedBlock -Path $agentsMd -Id 'browser' `
         -Content (Get-Content -LiteralPath (Join-Path $p2Locale 'AGENTS_browser.md') -Raw -Encoding UTF8)
     Write-Ok $M.p2_files_ok

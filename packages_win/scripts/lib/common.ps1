@@ -156,6 +156,64 @@ function Set-MarkedBlock {
     Write-TextFile -Path $Path -Text ($text.TrimEnd() + "`r`n")
 }
 
+function Get-KitHeadings {
+    # The top-level headings the kit writes into AGENTS.md, collected from the
+    # locale sources themselves - every language, not just the one being
+    # installed, and no copy of the prose to keep in sync here.
+    param([Parameter(Mandatory = $true)][string]$KitRoot)
+    $found = New-Object System.Collections.Generic.List[string]
+    $sources = @(
+        (Join-Path $KitRoot 'package1_opencode_plexus\config\locales'),
+        (Join-Path $KitRoot 'package2_browser_agent\config\locales')
+    )
+    foreach ($dir in $sources) {
+        if (-not (Test-Path -LiteralPath $dir)) { continue }
+        foreach ($file in (Get-ChildItem -LiteralPath $dir -Recurse -Filter 'AGENTS*.md' -File)) {
+            foreach ($line in (Get-Content -LiteralPath $file.FullName -Encoding UTF8)) {
+                if ($line -match '^#\s+\S' -and -not $found.Contains($line.Trim())) { $found.Add($line.Trim()) | Out-Null }
+            }
+        }
+    }
+    return $found
+}
+
+function Remove-LegacyKitSections {
+    # Kit versions released before the marker system wrote these sections into
+    # AGENTS.md with no markers around them. Set-MarkedBlock cannot find such a
+    # section, so on the next install it survives as a second copy of the rules -
+    # and, when the language was changed between installs, a copy in the OTHER
+    # language, which is what actually drives the model's answers. Strip any kit
+    # section that sits outside the markers. Returns $true when something went.
+    param(
+        [Parameter(Mandatory = $true)][string]$Path,
+        [Parameter(Mandatory = $true)][string[]]$Headings
+    )
+    if (-not (Test-Path -LiteralPath $Path) -or $Headings.Count -eq 0) { return $false }
+
+    $text = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+    $out = New-Object System.Collections.Generic.List[string]
+    $inMarked = $false
+    $dropping = $false
+    $removed = $false
+    foreach ($line in ($text -split "`r?`n")) {
+        if ($line -match '^<!-- opencode-kit:[^:]+:start -->$') {
+            $inMarked = $true; $dropping = $false
+        } elseif ($line -match '^<!-- opencode-kit:[^:]+:end -->$') {
+            $inMarked = $false; $out.Add($line) | Out-Null; continue
+        }
+        if (-not $inMarked) {
+            if ($Headings -contains $line.Trim()) { $dropping = $true; $removed = $true }
+            elseif ($dropping -and $line -match '^#\s+\S') { $dropping = $false }
+        }
+        if (-not $dropping) { $out.Add($line) | Out-Null }
+    }
+    if (-not $removed) { return $false }
+
+    $clean = ($out -join "`r`n") -replace "(`r`n){3,}", "`r`n`r`n"
+    Write-TextFile -Path $Path -Text ($clean.Trim() + "`r`n")
+    return $true
+}
+
 function Remove-MarkedBlock {
     param(
         [Parameter(Mandatory = $true)][string]$Path,

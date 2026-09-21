@@ -41,5 +41,5 @@ What you can do in plain words in the chat — ready-made phrases for the first 
 1. Open OpenCode, show that the agent is "office" and the model is DeepSeek.
 2. Task 1 (Word): "Create a letter to a client with a details table" — then open the resulting file in Word.
 3. Task 2 (Excel): "Sum up the values in my file" — and show the result.
-4. Task 3 (browser, if installed): launch the "Browser for OpenCode" shortcut and ask "Collect the contacts from the website …" — show how Chrome opens and works on its own.
+4. Task 3 (browser, if installed): just ask "Collect the contacts from the website …" — show how Chrome opens by itself and the agent works in it.
 5. Emphasise: tasks are written in plain words, nothing needs to be configured.

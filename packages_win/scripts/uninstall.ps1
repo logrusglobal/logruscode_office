@@ -5,8 +5,10 @@
 #     left in place with any settings the user added by hand);
 #   - the blocks it fenced with markers in AGENTS.md (hand-written text in that
 #     file survives; the file is deleted only if nothing else remains);
-#   - the agent files, start-browser.cmd and the desktop shortcut it created;
-#   - the Plexus key in auth.json (package 1).
+#   - the agent files, start-browser.cmd, ensure-browser.cmd and the desktop
+#     shortcut they are reached through;
+#   - the Plexus key in auth.json (package 1), with no backup left behind, plus
+#     any auth.json backup an earlier version of this script wrote.
 #
 # NOT removed: the user's documents, the Chrome debug profile with its logins
 # (pass -Purge), the config backups, and the OpenCode Desktop application.
@@ -94,6 +96,7 @@ foreach ($pkg in $Packages) {
         }
         if (Remove-KitPath -Path (Join-Path $agentsDir 'browser.md') -M $M) { $touched = $true }
         if (Remove-KitPath -Path (Join-Path $TargetDir 'start-browser.cmd') -M $M) { $touched = $true }
+        if (Remove-KitPath -Path (Join-Path $TargetDir 'ensure-browser.cmd') -M $M) { $touched = $true }
         if (Remove-MarkedBlock -Path $agentsMd -Id 'browser') {
             Write-Host ($M.u_removed -f 'AGENTS.md (web rules)'); $touched = $true
         }
@@ -142,16 +145,29 @@ foreach ($pkg in $Packages) {
             Write-Host ($M.u_removed -f 'AGENTS.md (base rules)'); $touched = $true
         }
 
+        # auth.json is NOT backed up on the way out, unlike opencode.json. The only
+        # thing the kit owns here is the Plexus key, so a backup would do nothing but
+        # leave that secret in plaintext next to the file it was just removed from -
+        # and would copy any other provider's key along with it. Entries other than
+        # lgplexus are kept in place, so there is nothing a backup could recover.
         $authPath = Join-Path $DataDir 'auth.json'
         if (Test-Path $authPath) {
             $auth = Read-JsonHashtable $authPath
             if (Test-HasKey $auth 'lgplexus') {
-                Backup-File -Path $authPath -M $M | Out-Null
                 $auth.Remove('lgplexus')
                 Write-JsonFile -Path $authPath -Value $auth
                 Write-Host ($M.u_removed -f 'auth.json (lgplexus key)')
                 $touched = $true
             }
+        }
+
+        # Kit versions up to this one did back auth.json up, so a plaintext key can be
+        # lying around from an earlier uninstall. Sweep those away as well.
+        $staleAuth = @(Get-ChildItem -LiteralPath $DataDir -Filter 'auth.json.backup-*' -File -ErrorAction SilentlyContinue)
+        if ($staleAuth.Count -gt 0) {
+            foreach ($f in $staleAuth) { Remove-Item -LiteralPath $f.FullName -Force }
+            Write-Ok ($M.u_auth_backups -f $staleAuth.Count)
+            $touched = $true
         }
         if (-not $touched) { Write-Host $M.u_nothing }
     }

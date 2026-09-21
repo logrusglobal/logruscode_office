@@ -30,7 +30,7 @@ The packages are independent — install any combination with `-Packages`. Packa
    ```
 
 4. Launch OpenCode Desktop and **show the employee** 2–3 examples from [task_examples.md](task_examples.md) — so they immediately see what they can now do (for example: "create a letter in Word" and "collect contacts from a website into Excel").
-5. For package 2: explain that before "from a website" tasks they need to launch the "Browser for OpenCode" shortcut (created on the desktop automatically).
+5. For package 2: explain that "from a website" tasks need nothing launched by hand — the agent opens Chrome itself; the "Browser for OpenCode" desktop shortcut is only a manual fallback.
 
 ### Installer parameters
 
@@ -60,7 +60,7 @@ cd "D:\OpenCode_Kit\scripts"
 .\uninstall.ps1 -Packages 2 -Purge  # ...and delete the Chrome debug profile too
 ```
 
-The uninstaller takes back out exactly what the installer put in: its keys in `opencode.json`, its marked blocks in `AGENTS.md`, the agent files, `start-browser.cmd`, the desktop shortcut and the Plexus key in `auth.json`. Settings the employee added by hand are left alone, and the config is backed up first.
+The uninstaller takes back out exactly what the installer put in: its keys in `opencode.json`, its marked blocks in `AGENTS.md`, the agent files, `start-browser.cmd`, `ensure-browser.cmd`, the desktop shortcut and the Plexus key in `auth.json`. Settings the employee added by hand are left alone, and the config is backed up first.
 
 Not removed: the employee's documents, the Chrome profile with its logins (use `-Purge`), the config backups, and the OpenCode Desktop application itself.
 
@@ -93,8 +93,9 @@ scripts/        install.ps1, uninstall.ps1 (the scriptable engines),
 docs/<lang>/    this documentation
 package1_opencode_plexus/   opencode.json + the office agent, per language
 package2_browser_agent/     the chrome-devtools MCP server, start-browser.cmd,
+                            ensure-browser.cmd,
                             the @browser subagent, per language
 package3_officecli/         the Word/Excel MCP servers and their handshake test
 ```
 
-Language-neutral files (`opencode.json`, the MCP fragments, `start-browser.cmd`) exist once. Only prose is duplicated per language, under `locales/<lang>/` and `docs/<lang>/`. To add a language, add `scripts/i18n/<lang>.json` plus the matching `locales/<lang>/` and `docs/<lang>/` folders — any message you do not translate falls back to English.
+Language-neutral files (`opencode.json`, the MCP fragments, the `*-browser.cmd` scripts) exist once. Only prose is duplicated per language, under `locales/<lang>/` and `docs/<lang>/`. To add a language, add `scripts/i18n/<lang>.json` plus the matching `locales/<lang>/` and `docs/<lang>/` folders — any message you do not translate falls back to English.
